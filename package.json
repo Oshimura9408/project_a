@@ -1,8 +1,7 @@
 {
   "name": "project_a",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Личный проект",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "gulp build",
