@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@htmlacademy/editorconfig-cli": "^1.0.0",
     "autoprefixer": "^9.1.5",
     "browser-sync": "^2.26.1",
     "css-mqpacker": "^7.0.0",
@@ -24,6 +25,8 @@
     "gulp-rename": "^1.4.0",
     "gulp-sass": "^4.0.1",
     "gulp-sourcemaps": "^2.6.4",
-    "run-sequence": "^2.2.1"
+    "run-sequence": "^2.2.1",
+    "stylelint": "^9.6.0",
+    "stylelint-config-htmlacademy": "^0.1.1"
   }
 }
