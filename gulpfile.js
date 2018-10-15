@@ -1,0 +1,113 @@
+const gulp = require(`gulp`);
+const sass = require(`gulp-sass`);
+const plumber = require(`gulp-plumber`);
+const postcss = require(`gulp-postcss`);
+const autoprefixer = require(`autoprefixer`);
+const server = require(`browser-sync`).create();
+const del = require(`del`);
+const mqpacker = require(`css-mqpacker`);
+const rollup = require(`gulp-better-rollup`);
+const sourcemaps = require(`gulp-sourcemaps`);
+
+gulp.task(`style`, () => {
+    return gulp.src(`sass/style.scss`).
+    pipe(plumber()).
+    pipe(sass()).
+    pipe(postcss([
+        autoprefixer({
+            browsers: [
+                `last 1 version`,
+                `last 2 Chrome versions`,
+                `last 2 Firefox versions`,
+                `last 2 Opera versions`,
+                `last 2 Edge versions`
+            ]
+        }),
+        mqpacker({sort: true})
+    ])).
+    pipe(gulp.dest(`build/css`)).
+    pipe(server.stream()).
+    pipe(gulp.dest(`build/css`));
+});
+
+gulp.task(`scripts`, () => {
+    return gulp.src(`js/**/*.js`).
+    pipe(plumber()).
+    pipe(gulp.dest(`build/js/`));
+});
+
+gulp.task(`imagemin`, [`copy`], () => {
+    return gulp.src(`build/img/**/*.{jpg,png,gif}`).
+    pipe(gulp.dest(`build/img`));
+});
+
+gulp.task(`copy-html`, () => {
+    return gulp.src(`source/*.{html,ico}`).
+    pipe(gulp.dest(`build`)).
+    pipe(server.stream());
+});
+
+gulp.task(`copy`, [`copy-html`, `scripts`, `style`], () => {
+    return gulp.src([
+        `source/fonts/**/*.{woff,woff2}`,
+        `source/img/*.*`
+    ], {base: `.`}).
+    pipe(gulp.dest(`build`));
+});
+
+gulp.task(`clean`, () => {
+    return del(`build`);
+});
+
+gulp.task(`js-watch`, [`scripts`], (done) => {
+    server.reload();
+    done();
+});
+
+gulp.task(`serve`, [`assemble`], () => {
+    server.init({
+        server: `./build`,
+        notify: false,
+        open: true,
+        port: 3502,
+        ui: false
+    });
+
+    gulp.watch(`source/sass/**/*.{scss,sass}`, [`style`]);
+    gulp.watch(`source/*.html`).on(`change`, (e) => {
+        if (e.type !== `deleted`) {
+            gulp.start(`copy-html`);
+        }
+    });
+    gulp.watch(`source/js/**/*.js`, [`js-watch`]);
+});
+
+gulp.task(`assemble`, [`clean`], () => {
+    gulp.start(`copy`, `style`);
+});
+
+gulp.task(`build`, [`assemble`], () => {
+    gulp.start(`imagemin`);
+});
+
+gulp.task(`scripts`, () => {
+    return gulp.src(`source/js/main.js`)
+        .pipe(plumber())
+        .pipe(sourcemaps.init())
+        .pipe(rollup({}, `iife`))
+        .pipe(sourcemaps.write(``))
+        .pipe(gulp.dest(`build/js`));
+});
+
+// gulp.task(`test`, () => {
+//     return gulp
+//         .src([`js/**/*.test.js`])
+//         .pipe(rollup({
+//             plugins: [
+//                 commonjs()
+//             ]}, `cjs`))
+//         .pipe(gulp.dest(`build/test`))
+//         .pipe(mocha({
+//             reporter: `spec`
+//         }));
+// });
